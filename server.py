@@ -37,9 +37,10 @@ def save_new(mongodb, collectionName, bottleRequest = request, systemTime = time
         data_point = bottleRequest.json
         print ("Saving new from " + str(data_point) + " to collection '" + collectionName + "'")
     except:
+        print ("Could not parse JSON provided, will not try to save")
         return {"message": "malformed JSON was provided"}
     if data_point is None:
-        print ("No JSON posted")
+        print ("No JSON posted, will not try to save")
         return {"message": "this endpoint expects JSON"}
 
     print ("Adding timestamp to data")
