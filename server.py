@@ -26,6 +26,10 @@ class EnableCors(object):
 
 app = Bottle()
 
+@app.get("")
+def healthCheck():
+    return "I exist!"
+
 @app.post("/<collectionName>")
 def save_new(mongodb, collectionName, bottleRequest = request, systemTime = time):
     try:
