@@ -1,4 +1,5 @@
-from bottle import Bottle, request, static_file, template, debug
+import bottle
+from bottle import Bottle, request, static_file, template, debug, response
 import argparse
 from bottle.ext.mongo import MongoPlugin
 from bson.json_util import dumps, loads
