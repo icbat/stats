@@ -33,6 +33,7 @@ def healthCheck():
 
 @app.post("/<collectionName>")
 def save_new(mongodb, collectionName, bottleRequest = request, systemTime = time):
+    print ("Request received for collection " + collectionName)
     try:
         data_point = bottleRequest.json
         print ("Saving new from " + str(data_point) + " to collection '" + collectionName + "'")
