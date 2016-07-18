@@ -5,6 +5,7 @@ from bottle.ext.mongo import MongoPlugin
 from bson.json_util import dumps, loads
 from os import environ
 import time
+import json
 
 print ("Initializing")
 
@@ -16,8 +17,8 @@ class EnableCors(object):
         def _enable_cors(*args, **kwargs):
             # set CORS headers
             response.headers['Access-Control-Allow-Origin'] = '*'
-            response.headers['Access-Control-Allow-Methods'] = '*'
-            response.headers['Access-Control-Allow-Headers'] = '*'
+            response.headers['Access-Control-Allow-Methods'] = 'POST'
+            response.headers['Access-Control-Allow-Headers'] = ''
 
             if bottle.request.method != 'OPTIONS':
                 # actual request; reply with the actual response
@@ -35,14 +36,16 @@ def healthCheck():
 def save_new(mongodb, collectionName, bottleRequest = request, systemTime = time):
     print ("Request received for collection " + collectionName)
     try:
-        data_point = bottleRequest.json
+        for key in bottleRequest.POST.keys():
+            data_point = key
+        if data_point is None:
+            print ("No JSON posted, will not try to save")
+            return {"message": "this endpoint expects JSON"}
+        data_point = json.loads(data_point)
         print ("Saving new from " + str(data_point) + " to collection '" + collectionName + "'")
     except:
         print ("Could not parse JSON provided, will not try to save")
         return {"message": "malformed JSON was provided"}
-    if data_point is None:
-        print ("No JSON posted, will not try to save")
-        return {"message": "this endpoint expects JSON"}
 
     print ("Adding timestamp to data")
     data_point["timestamp"] = systemTime.time()
