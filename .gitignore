@@ -87,3 +87,8 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# venv/pip stuff
+pip-selfcheck.json
+Include/
+Scripts/
