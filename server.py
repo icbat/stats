@@ -26,7 +26,7 @@ class EnableCors(object):
 
 app = Bottle()
 
-@app.get("")
+@app.get("/")
 def healthCheck():
     return "I exist!"
 
