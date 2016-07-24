@@ -34,8 +34,14 @@ def healthCheck():
 
 @app.get("/<collectionName>/total")
 def find_total(mongodb, collectionName, bottleRequest = request):
-    print ("Fetching all data for collection " + collectionName)
+    print ("Fetching total for collection " + collectionName)
     return dumps({"collectionName": collectionName, "total": mongodb[collectionName].count()})
+
+@app.get("/<collectionName>")
+def find_total(mongodb, collectionName, bottleRequest = request):
+    print ("Fetching all data from collection " + collectionName)
+    rawData = list(mongodb[collectionName].find())
+    return dumps({"collectionName": collectionName, "data": rawData})
 
 @app.post("/<collectionName>")
 def save_new(mongodb, collectionName, bottleRequest = request, systemTime = time):
