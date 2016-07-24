@@ -59,10 +59,8 @@ def save_new(mongodb, collectionName, bottleRequest = request, systemTime = time
         print ("Could not parse JSON provided, will not try to save")
         return {"message": "malformed JSON was provided"}
 
-    print ("Adding timestamp to data")
+    print ("Timestamping to data")
     data_point["timestamp"] = systemTime.time()
-    print ("JSON received:")
-    print (dumps(data_point))
     print ("Saving to mongodb")
     mongodb[collectionName].insert_one(data_point)
     print ("Save was successful!")
