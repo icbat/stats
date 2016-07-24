@@ -32,16 +32,12 @@ app = Bottle()
 def healthCheck():
     return "I exist!"
 
-@app.get("/<collectionName>/total")
-def find_total(mongodb, collectionName, bottleRequest = request):
-    print ("Fetching total for collection " + collectionName)
-    return dumps({"collectionName": collectionName, "total": mongodb[collectionName].count()})
-
 @app.get("/<collectionName>")
-def find_total(mongodb, collectionName, bottleRequest = request):
+def find_total(mongodb, collectionName):
     print ("Fetching all data from collection " + collectionName)
     rawData = list(mongodb[collectionName].find())
-    return dumps({"collectionName": collectionName, "data": rawData})
+    return dumps({"collectionName": collectionName, "data": rawData, "total": mongodb[collectionName].count()})
+
 @app.get("/<collectionName>/distinct")
 def find_total(mongodb, collectionName):
     print ("Fetching distinct data from collection " + collectionName)
