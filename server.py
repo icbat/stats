@@ -6,6 +6,7 @@ from bson.json_util import dumps, loads
 from os import environ
 import time
 import json
+from math import floor
 
 
 print ("Initializing")
@@ -45,7 +46,7 @@ def all(mongodb, collectionName):
 
 @app.get("/<collectionName>/distinct")
 def distinct(mongodb, collectionName):
-    print ("Fetching distinct data from collection " + collectionName)
+    print ("Fetching distinct uuids from collection " + collectionName)
     rawData = list(mongodb[collectionName].distinct("uuid"))
     return dumps({"collectionName": collectionName, "data": rawData, "total":len(rawData)})
 
@@ -63,6 +64,19 @@ def grouped(mongodb, collectionName):
             output[uuid] = []
         del document['uuid']
         output[uuid].append(document)
+    return dumps(output)
+
+@app.get("/<collectionName>/daily")
+def daily(mongodb, collectionName):
+    rawData = list(mongodb[collectionName].find())
+    remove_internal_ids(rawData)
+
+    output = {}
+    for document in rawData:
+        dayStart = floor(document['timestamp'] / 86400) * 86400
+        if dayStart not in output:
+            output[dayStart] = []
+        output[dayStart].append(document)
     return dumps(output)
 
 
