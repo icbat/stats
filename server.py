@@ -33,13 +33,13 @@ def healthCheck():
     return "I exist!"
 
 @app.get("/<collectionName>")
-def find_total(mongodb, collectionName):
+def all(mongodb, collectionName):
     print ("Fetching all data from collection " + collectionName)
     rawData = list(mongodb[collectionName].find())
     return dumps({"collectionName": collectionName, "data": rawData, "total": mongodb[collectionName].count()})
 
 @app.get("/<collectionName>/distinct")
-def find_total(mongodb, collectionName):
+def distinct(mongodb, collectionName):
     print ("Fetching distinct data from collection " + collectionName)
     rawData = list(mongodb[collectionName].distinct("uuid"))
     return dumps({"collectionName": collectionName, "data": rawData, "total":len(rawData)})
