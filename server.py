@@ -44,6 +44,18 @@ def distinct(mongodb, collectionName):
     rawData = list(mongodb[collectionName].distinct("uuid"))
     return dumps({"collectionName": collectionName, "data": rawData, "total":len(rawData)})
 
+@app.get("/<collectionName>/grouped")
+def grouped(mongodb, collectionName):
+    print ("Fetching distinct data from collection " + collectionName)
+    output = {}
+    rawData = list(mongodb[collectionName].find())
+    for document in rawData:
+        uuid = document['uuid']
+        if uuid not in output:
+            output[uuid] = []
+        output[uuid].append(document)
+    return dumps(output)
+
 @app.post("/<collectionName>")
 def save_new(mongodb, collectionName, bottleRequest = request, systemTime = time):
     print ("Request received for collection " + collectionName)
