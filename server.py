@@ -7,6 +7,7 @@ from os import environ
 import time
 import json
 
+
 print ("Initializing")
 
 class EnableCors(object):
@@ -28,15 +29,19 @@ class EnableCors(object):
 
 app = Bottle()
 
+
 @app.get("/")
 def healthCheck():
     return "I exist!"
+
 
 @app.get("/<collectionName>")
 def all(mongodb, collectionName):
     print ("Fetching all data from collection " + collectionName)
     rawData = list(mongodb[collectionName].find())
+    remove_internal_ids(rawData)
     return dumps({"collectionName": collectionName, "data": rawData, "total": mongodb[collectionName].count()})
+
 
 @app.get("/<collectionName>/distinct")
 def distinct(mongodb, collectionName):
@@ -44,17 +49,27 @@ def distinct(mongodb, collectionName):
     rawData = list(mongodb[collectionName].distinct("uuid"))
     return dumps({"collectionName": collectionName, "data": rawData, "total":len(rawData)})
 
+
 @app.get("/<collectionName>/grouped")
 def grouped(mongodb, collectionName):
     print ("Fetching distinct data from collection " + collectionName)
-    output = {}
     rawData = list(mongodb[collectionName].find())
+    remove_internal_ids(rawData)
+
+    output = {}
     for document in rawData:
         uuid = document['uuid']
         if uuid not in output:
             output[uuid] = []
+        del document['uuid']
         output[uuid].append(document)
     return dumps(output)
+
+
+def remove_internal_ids(data):
+    for document in data:
+        del document["_id"]
+
 
 @app.post("/<collectionName>")
 def save_new(mongodb, collectionName, bottleRequest = request, systemTime = time):
