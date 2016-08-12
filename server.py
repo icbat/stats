@@ -49,7 +49,7 @@ def all(mongodb, collectionName):
     rawData = list(mongodb[collectionName].find())
     remove_internal_ids(rawData)
     rawData = remove_ignored_uuids(rawData)
-    return dumps({"collectionName": collectionName, "data": rawData, "total": len(rawData)})
+    return dumps({"data": rawData, "total": len(rawData)})
 
 @app.get("/<collectionName>/distinct")
 def distinct(mongodb, collectionName):
@@ -60,7 +60,7 @@ def distinct(mongodb, collectionName):
         if uuid not in ignoredUUIDs:
             output.append(uuid)
 
-    return dumps({"collectionName": collectionName, "data": output, "total":len(output)})
+    return dumps({"data": output, "total":len(output)})
 
 @app.get("/<collectionName>/byUser")
 def grouped(mongodb, collectionName):
