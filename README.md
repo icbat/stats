@@ -1,6 +1,8 @@
 # stats
 a simple stat server
 
+[![Build Status](https://travis-ci.org/icbat/stats.svg?branch=master)](https://travis-ci.org/icbat/stats)
+
 ## Setup
 
 1. Enviroment variable for your mongo uri `MONGODB_URI=mongodb://<dbuser>:<dbpassword>@<urlthingy>:<port>`
