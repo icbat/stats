@@ -49,7 +49,7 @@ def all(mongodb, collectionName):
     rawData = list(mongodb[collectionName].find())
     remove_internal_ids(rawData)
     rawData = remove_ignored_uuids(rawData)
-    return dumps({"collectionName": collectionName, "data": rawData, "total": mongodb[collectionName].count()})
+    return dumps({"collectionName": collectionName, "data": rawData, "total": len(rawData)})
 
 @app.get("/<collectionName>/distinct")
 def distinct(mongodb, collectionName):
