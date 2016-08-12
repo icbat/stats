@@ -28,7 +28,7 @@ class stats:
             if dayStart not in output:
                 output[dayStart] = 0
             output[dayStart] += 1
-        keys = sorted(output, key=output.get)
+        keys = sorted(output.keys())
         values = [output[key] for key in keys]
         return {"labels": keys, "data": values}
 
