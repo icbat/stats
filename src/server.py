@@ -63,7 +63,7 @@ def daily(mongodb, collectionName):
     rawData = list(mongodb[collectionName].find())
     rawData = logic.cleanse(rawData)
     output = logic.daily_totals(rawData)
-    return dumps(logic.present(output))
+    return dumps(output)
 
 @app.post("/<collectionName>")
 def save_new(mongodb, collectionName, bottleRequest = request, systemTime = time):
