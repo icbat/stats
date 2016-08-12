@@ -1,27 +1,26 @@
 from api import stats
 
 testObject = stats(["abcd"])
+ignoredUUID = testObject.ignoredUUIDs[0]
+removedField = testObject.removedField
 
-def test_remove_ignored_uuids_when_empty():
-    assert testObject.remove_ignored_uuids([]) == []
+def test_cleanse_when_empty():
+    assert testObject.cleanse([]) == []
 
-def test_remove_ignored_uuids_when_other_uuids_present():
-    assert testObject.remove_ignored_uuids([{"uuid": "1234"}]) == [{"uuid": "1234"}]
+def test_cleanse_when_other_uuids_present():
+    assert testObject.cleanse([{"uuid": "1234"}]) == [{"uuid": "1234"}]
 
-def test_remove_ignored_uuids_when_bad_uuids_present():
-    assert testObject.remove_ignored_uuids([{"uuid": "abcd"}, {"uuid": "abcdefg"}, {"uuid": "abcd"}]) == [{"uuid": "abcdefg"}]
+def test_cleanse_when_bad_uuids_present():
+    assert testObject.cleanse([{"uuid": ignoredUUID}, {"uuid": "abcdefg"}, {"uuid": ignoredUUID}]) == [{"uuid": "abcdefg"}]
 
-def test_remove_internal_ids_when_empty():
-    assert testObject.remove_internal_ids([]) == []
+def test_cleanse_removes_ids():
+    assert testObject.cleanse([{removedField: "should be removed", "anything else": "should stay", "uuid": "1234"}]) == [{"anything else": "should stay", "uuid": "1234"}]
 
-def test_remove_internal_ids_removes_ids():
-    assert testObject.remove_internal_ids([{"_id": "should be removed", "anything else": "should stay"}]) == [{"anything else": "should stay"}]
-
-def test_remove_internal_ids_doesNot_harm_input():
-    expected = {"_id": "should still be on original", "anything else": "should also stay"}
-    input = [{"_id": "should still be on original", "anything else": "should also stay"}]
+def test_cleanse_doesNot_harm_input():
+    expected = {removedField: "should still be on original", "anything else": "should also stay", "uuid": ignoredUUID}
+    input = [{removedField: "should still be on original", "anything else": "should also stay", "uuid": ignoredUUID}]
     assert expected == input[0]
 
-    testObject.remove_internal_ids(input)
+    testObject.cleanse(input)
 
     assert expected == input[0]

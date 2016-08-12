@@ -10,7 +10,6 @@ from math import floor
 from api import stats
 
 
-
 print ("Initializing")
 print ("Reading ignored UUIDs from 'IGNORED_UUIDS' environment variable")
 try:
@@ -50,8 +49,7 @@ def healthCheck():
 def all(mongodb, collectionName):
     print ("Fetching all data from collection " + collectionName)
     rawData = list(mongodb[collectionName].find())
-    rawData = logic.remove_internal_ids(rawData)
-    rawData = logic.remove_ignored_uuids(rawData)
+    rawData = logic.cleanse(rawData)
     return dumps({"data": rawData, "total": len(rawData)})
 
 @app.get("/<collectionName>/distinct")
@@ -69,8 +67,7 @@ def distinct(mongodb, collectionName):
 def grouped(mongodb, collectionName):
     print ("Fetching data grouped by user from collection " + collectionName)
     rawData = list(mongodb[collectionName].find())
-    rawData = logic.remove_internal_ids(rawData)
-    rawData = logic.remove_ignored_uuids(rawData)
+    rawData = logic.cleanse(rawData)
 
     output = {}
     for document in rawData:
@@ -85,8 +82,7 @@ def grouped(mongodb, collectionName):
 @app.get("/<collectionName>/daily")
 def daily(mongodb, collectionName):
     rawData = list(mongodb[collectionName].find())
-    rawData = logic.remove_internal_ids(rawData)
-    rawData = logic.remove_ignored_uuids(rawData)
+    rawData = logic.cleanse(rawData)
 
     output = {}
     for document in rawData:
