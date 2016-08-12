@@ -7,6 +7,8 @@ from os import environ
 import time
 import json
 from math import floor
+from api import stats
+
 
 
 print ("Initializing")
@@ -14,10 +16,11 @@ print ("Reading ignored UUIDs from 'IGNORED_UUIDS' environment variable")
 try:
     ignoredUUIDs = environ["IGNORED_UUIDS"]
     ignoredUUIDs = ignoredUUIDs.split(",")
+    print ("Ignoring " + str(ignoredUUIDs))
 except:
     print ("Couldn't find ignored UUIDs in environment variable 'IGNORED_UUIDS'")
     ignoredUUIDs = []
-
+logic = stats(ignoredUUIDs)
 
 class EnableCors(object):
     name = 'enable_cors'
@@ -47,8 +50,8 @@ def healthCheck():
 def all(mongodb, collectionName):
     print ("Fetching all data from collection " + collectionName)
     rawData = list(mongodb[collectionName].find())
-    remove_internal_ids(rawData)
-    rawData = remove_ignored_uuids(rawData)
+    rawData = logic.remove_internal_ids(rawData)
+    rawData = logic.remove_ignored_uuids(rawData)
     return dumps({"data": rawData, "total": len(rawData)})
 
 @app.get("/<collectionName>/distinct")
@@ -66,8 +69,8 @@ def distinct(mongodb, collectionName):
 def grouped(mongodb, collectionName):
     print ("Fetching data grouped by user from collection " + collectionName)
     rawData = list(mongodb[collectionName].find())
-    remove_internal_ids(rawData)
-    rawData = remove_ignored_uuids(rawData)
+    rawData = logic.remove_internal_ids(rawData)
+    rawData = logic.remove_ignored_uuids(rawData)
 
     output = {}
     for document in rawData:
@@ -82,8 +85,8 @@ def grouped(mongodb, collectionName):
 @app.get("/<collectionName>/daily")
 def daily(mongodb, collectionName):
     rawData = list(mongodb[collectionName].find())
-    remove_internal_ids(rawData)
-    rawData = remove_ignored_uuids(rawData)
+    rawData = logic.remove_internal_ids(rawData)
+    rawData = logic.remove_ignored_uuids(rawData)
 
     output = {}
     for document in rawData:
@@ -92,20 +95,6 @@ def daily(mongodb, collectionName):
             output[dayStart] = []
         output[dayStart].append(document)
     return dumps(output)
-
-
-def remove_internal_ids(data):
-    """Removes the mongodb internal id from items returned to the user"""
-    for document in data:
-        del document["_id"]
-
-def remove_ignored_uuids(data):
-    """Given a list of documents with uuid at the top level, returns a list of documents without uuids defined in ignoredUUIDs"""
-    output = []
-    for document in data:
-        if document['uuid'] not in ignoredUUIDs:
-            output.append(document)
-    return output
 
 
 @app.post("/<collectionName>")

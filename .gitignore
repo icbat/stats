@@ -92,3 +92,6 @@ ENV/
 pip-selfcheck.json
 Include/
 Scripts/
+
+# required by the atom nosetest runner I use
+nosetests.json
