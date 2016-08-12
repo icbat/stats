@@ -6,7 +6,6 @@ from bson.json_util import dumps, loads
 from os import environ
 import time
 import json
-from math import floor
 from api import stats
 
 
@@ -75,17 +74,11 @@ def grouped(mongodb, collectionName):
     return dumps(logic.present(output))
 
 
-@app.get("/<collectionName>/daily")
+@app.get("/<collectionName>/daily_totals")
 def daily(mongodb, collectionName):
     rawData = list(mongodb[collectionName].find())
     rawData = logic.cleanse(rawData)
-
-    output = {}
-    for document in rawData:
-        dayStart = floor(document['timestamp'] / 86400) * 86400
-        if dayStart not in output:
-            output[dayStart] = []
-        output[dayStart].append(document)
+    output = logic.daily_totals(rawData)
     return dumps(logic.present(output))
 
 

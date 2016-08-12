@@ -24,3 +24,43 @@ def test_cleanse_doesNot_harm_input():
     testObject.cleanse(input)
 
     assert expected == input[0]
+
+def test_daily_when_empty():
+    input = []
+
+    actual = testObject.daily_totals(input)
+
+    assert actual["data"] == []
+    assert actual['labels'] == []
+
+def test_daily_when_all_one_day():
+    input = [{"timestamp": 111, "otherThing": "stillHere"}]
+
+    actual = testObject.daily_totals(input)
+
+    assert actual["data"] == [1]
+    assert actual['labels'] == [0]
+
+def test_daily_with_different_days():
+    input = [{"timestamp": 111, "otherThing": "stillHere"}, {"timestamp": 86423, "otherThing": "stillHere"}]
+
+    actual = testObject.daily_totals(input)
+
+    assert actual["data"] == [1,1]
+    assert actual['labels'] == [0, 86400]
+
+def test_daily_groups_days_together():
+    input = [{"timestamp": 111, "otherThing": "stillHere"}, {"timestamp": 123, "otherThing": "stillHere"}]
+
+    actual = testObject.daily_totals(input)
+
+    assert actual["data"] == [2]
+    assert actual['labels'] == [0]
+
+def test_daily_sorts():
+    input = [{"timestamp": 86423, "otherThing": "stillHere"}, {"timestamp": 86424, "otherThing": "stillHere"}, {"timestamp": 123, "otherThing": "stillHere"}]
+
+    actual = testObject.daily_totals(input)
+
+    assert actual["data"] == [1,2]
+    assert actual['labels'] == [0, 86400]

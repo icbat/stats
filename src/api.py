@@ -1,4 +1,5 @@
 import copy
+from math import floor
 
 class stats:
     def __init__(self, ignoredUUIDs):
@@ -19,3 +20,17 @@ class stats:
 
     def present(self, data):
         return {"data": data, "total": len(data)}
+
+    def daily_totals(self, rawData):
+        output = {}
+        for document in rawData:
+            dayStart = self.__round_to_day(document['timestamp'])
+            if dayStart not in output:
+                output[dayStart] = 0
+            output[dayStart] += 1
+        keys = sorted(output, key=output.get)
+        values = [output[key] for key in keys]
+        return {"labels": keys, "data": values}
+
+    def __round_to_day(self, timestamp):
+        return floor(timestamp / 86400) * 86400
