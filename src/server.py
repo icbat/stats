@@ -56,11 +56,7 @@ def all(mongodb, collectionName):
 def distinct(mongodb, collectionName):
     print ("Fetching distinct uuids from collection " + collectionName)
     rawData = list(mongodb[collectionName].distinct("uuid"))
-    output = []
-    for uuid in rawData:
-        if uuid not in ignoredUUIDs:
-            output.append(uuid)
-
+    output = [uuid for uuid in rawData if uuid not in ignoredUUIDs]    
     return dumps({"data": output, "total":len(output)})
 
 @app.get("/<collectionName>/byUser")
