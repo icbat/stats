@@ -16,7 +16,7 @@ try:
     ignoredUUIDs = ignoredUUIDs.split(",")
 except:
     print ("Couldn't find ignored UUIDs in environment variable 'IGNORED_UUIDS'")
-    print ("Failing until better error handling exists... Sorry!")
+    ignoredUUIDs = []
 
 
 class EnableCors(object):
