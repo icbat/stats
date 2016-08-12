@@ -16,3 +16,6 @@ class stats:
             del duplicate[self.removedField]
             return duplicate
         return document
+
+    def present(self, data):
+        return {"data": data, "total": len(data)}

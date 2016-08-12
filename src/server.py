@@ -49,15 +49,15 @@ def healthCheck():
 def all(mongodb, collectionName):
     print ("Fetching all data from collection " + collectionName)
     rawData = list(mongodb[collectionName].find())
-    rawData = logic.cleanse(rawData)
-    return dumps({"data": rawData, "total": len(rawData)})
+    output = logic.cleanse(rawData)
+    return dumps(logic.present(output))
 
 @app.get("/<collectionName>/distinct")
 def distinct(mongodb, collectionName):
     print ("Fetching distinct uuids from collection " + collectionName)
     rawData = list(mongodb[collectionName].distinct("uuid"))
-    output = [uuid for uuid in rawData if uuid not in ignoredUUIDs]    
-    return dumps({"data": output, "total":len(output)})
+    output = [uuid for uuid in rawData if uuid not in ignoredUUIDs]
+    return dumps(logic.present(output))
 
 @app.get("/<collectionName>/byUser")
 def grouped(mongodb, collectionName):
@@ -72,7 +72,7 @@ def grouped(mongodb, collectionName):
             output[uuid] = []
         del document['uuid']
         output[uuid].append(document)
-    return dumps(output)
+    return dumps(logic.present(output))
 
 
 @app.get("/<collectionName>/daily")
@@ -86,7 +86,7 @@ def daily(mongodb, collectionName):
         if dayStart not in output:
             output[dayStart] = []
         output[dayStart].append(document)
-    return dumps(output)
+    return dumps(logic.present(output))
 
 
 @app.post("/<collectionName>")
