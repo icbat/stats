@@ -58,29 +58,12 @@ def distinct(mongodb, collectionName):
     output = [uuid for uuid in rawData if uuid not in ignoredUUIDs]
     return dumps(logic.present(output))
 
-@app.get("/<collectionName>/byUser")
-def grouped(mongodb, collectionName):
-    print ("Fetching data grouped by user from collection " + collectionName)
-    rawData = list(mongodb[collectionName].find())
-    rawData = logic.cleanse(rawData)
-
-    output = {}
-    for document in rawData:
-        uuid = document['uuid']
-        if uuid not in output:
-            output[uuid] = []
-        del document['uuid']
-        output[uuid].append(document)
-    return dumps(logic.present(output))
-
-
 @app.get("/<collectionName>/daily_totals")
 def daily(mongodb, collectionName):
     rawData = list(mongodb[collectionName].find())
     rawData = logic.cleanse(rawData)
     output = logic.daily_totals(rawData)
     return dumps(logic.present(output))
-
 
 @app.post("/<collectionName>")
 def save_new(mongodb, collectionName, bottleRequest = request, systemTime = time):
