@@ -67,7 +67,7 @@ def daily(mongodb, collectionName):
 
 @app.post("/<collectionName>")
 def save_new(mongodb, collectionName, bottleRequest = request, systemTime = time):
-    print ("Request received for collection " + collectionName)
+    print ("Trying to save to: " + collectionName)
     try:
         for key in bottleRequest.POST.keys():
             data_point = key
@@ -80,9 +80,7 @@ def save_new(mongodb, collectionName, bottleRequest = request, systemTime = time
         print ("Could not parse JSON provided, will not try to save")
         return {"message": "malformed JSON was provided"}
 
-    print ("Timestamping to data")
     data_point["timestamp"] = systemTime.time()
-    print ("Saving to mongodb")
     mongodb[collectionName].insert_one(data_point)
     print ("Save was successful!")
     return dumps(data_point)
