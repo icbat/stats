@@ -1,5 +1,6 @@
 import copy
 from math import floor
+from time import time
 
 class stats:
     def __init__(self, ignoredUUIDs):
@@ -31,6 +32,16 @@ class stats:
         keys = sorted(output.keys())
         values = [output[key] for key in keys]
         return {"labels": keys, "data": values}
+
+    def from_today(self, rawData):
+        outputData = []
+        today = self.__round_to_day(time())
+        for document in rawData:
+            theirDay = self.__round_to_day(document['timestamp'])
+            if theirDay == today:
+                outputData.append(document)
+        return {"data": outputData}
+
 
     def __round_to_day(self, timestamp):
         return floor(timestamp / 86400) * 86400

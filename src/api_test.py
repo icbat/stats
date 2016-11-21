@@ -1,4 +1,5 @@
 from api import stats
+from time import time
 
 testObject = stats(["abcd"])
 ignoredUUID = testObject.ignoredUUIDs[0]
@@ -64,3 +65,11 @@ def test_daily_sorts():
 
     assert actual["data"] == [2,1]
     assert actual['labels'] == [0, 86400]
+
+def test_fromToday_filters_older_days():
+    input = [{"timestamp": time(), "score": 3}, {"timestamp": 0, "score": 4}];
+
+    actual = testObject.from_today(input)
+
+    assert actual["data"][0]["score"] == 3
+    assert len(actual["data"]) == 1
