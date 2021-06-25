@@ -1,8 +1,7 @@
 import bottle
-from bottle import Bottle, request, static_file, template, debug, response
+from bottle import Bottle, request, response
 import argparse
-from bottle.ext.mongo import MongoPlugin
-from bson.json_util import dumps, loads
+from bson.json_util import dumps
 from os import environ
 import time
 import json
@@ -93,11 +92,6 @@ def save_new(mongodb, collectionName, bottleRequest = request, systemTime = time
     return dumps(data_point)
 
 if __name__ == "__main__":
-    print ("Reading db configuration from 'MONGODB_URI' environment variable")
-    mongo_uri = environ["MONGODB_URI"]
-    print ("Connecting to mongo")
-    plugin = MongoPlugin(uri=mongo_uri, db="mydb", json_mongo=True)
-    app.install(plugin)
     print ("Enabling CORS for AJAX requests")
     app.install(EnableCors())
 
