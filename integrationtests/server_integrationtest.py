@@ -28,3 +28,10 @@ def test_post_accepts_empty_bodies():
     assert r.status_code == 200
     assert "timestamp" in r.json().keys()
     assert len(r.json().keys()) == 1
+
+def test_get_unfilled_collection_empty_array():
+    r = requests.get(f"{local_server}/{random_string()}")
+
+    assert r.status_code == 200
+    assert r.json()['data'] == []
+    assert r.json()['total'] == 0
