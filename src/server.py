@@ -12,7 +12,7 @@ from api import stats
 print ("Initializing")
 print ("Reading ignored UUIDs from 'IGNORED_UUIDS' environment variable")
 try:
-    ignoredUUIDs = environ["IGNORED_UUIDS"]
+    ignoredUUIDs = environ.get("IGNORED_UUIDS", "")
     ignoredUUIDs = ignoredUUIDs.split(",")
     print ("Ignoring " + str(ignoredUUIDs))
 except:

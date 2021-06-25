@@ -12,10 +12,10 @@ a simple stat server
 
 ### How to turn it on locally
 
-1. using python, `virtualenv .`
-1. run script `Scripts/activate`
+1. using python, `virtualenv venv`
+1. run script `venv/Scripts/activate` (or `source venv/Scripts/activate` is using something like bash)
 1. `pip install -r requirements.txt`
-1. `python server.py --port <port> --host <host>`
+1. `MONGODB_URI=<your local mongodb> python src/server.py --port <port> --host <host>`
 
 Once the server is running, you can post arbitrary JSON at `<yourServer>/<collectionName>` and it will be saved to your linked MongoDB server under collection <collectionName>
 
