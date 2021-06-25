@@ -1,7 +1,6 @@
 import bottle
 from bottle import Bottle, request, response
 import argparse
-from bson.json_util import dumps
 from os import environ
 import time
 import json
@@ -44,35 +43,39 @@ def healthCheck():
     return "I exist!"
 
 @app.get("/<collectionName>")
-def all(mongodb, collectionName):
+def all(collectionName):
     print ("Fetching all data from collection " + collectionName)
-    rawData = list(mongodb[collectionName].find())
+    # rawData = list(mongodb[collectionName].find())
+    rawData = list([])
     output = logic.cleanse(rawData)
-    return dumps(logic.present(output))
+    return logic.present(output)
 
 @app.get("/<collectionName>/distinct")
-def distinct(mongodb, collectionName):
+def distinct(collectionName):
     print ("Fetching distinct uuids from collection " + collectionName)
-    rawData = list(mongodb[collectionName].distinct("uuid"))
+    # rawData = list(mongodb[collectionName].distinct("uuid"))
+    rawData = list([])
     output = [uuid for uuid in rawData if uuid not in ignoredUUIDs]
-    return dumps(logic.present(output))
+    return logic.present(output)
 
 @app.get("/<collectionName>/daily_totals")
-def daily(mongodb, collectionName):
-    rawData = list(mongodb[collectionName].find())
+def daily(collectionName):
+    # rawData = list(mongodb[collectionName].find())
+    rawData = list([])
     rawData = logic.cleanse(rawData)
     output = logic.daily_totals(rawData)
-    return dumps(output)
+    return output
 
 @app.get("/<collectionName>/today")
-def daily(mongodb, collectionName):
-    rawData = list(mongodb[collectionName].find())
+def daily(collectionName):
+    # rawData = list(mongodb[collectionName].find())
+    rawData = list([])
     rawData = logic.cleanse(rawData)
     output = logic.from_today(rawData)
-    return dumps(output)
+    return output
 
 @app.post("/<collectionName>")
-def save_new(mongodb, collectionName, bottleRequest = request, systemTime = time):
+def save_new(collectionName, bottleRequest = request, systemTime = time):
     print ("Trying to save to: " + collectionName)
     try:
         for key in bottleRequest.POST.keys():
@@ -87,9 +90,9 @@ def save_new(mongodb, collectionName, bottleRequest = request, systemTime = time
         return {"message": "malformed JSON was provided"}
 
     data_point["timestamp"] = systemTime.time()
-    mongodb[collectionName].insert_one(data_point)
+    # mongodb[collectionName].insert_one(data_point)
     print ("Save was successful!")
-    return dumps(data_point)
+    return data_point
 
 if __name__ == "__main__":
     print ("Enabling CORS for AJAX requests")

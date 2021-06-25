@@ -16,6 +16,12 @@ a simple stat server
 
 Once the server is running, you can post arbitrary JSON at `<yourServer>/<collectionName>` and it will be saved to your linked MongoDB server under collection <collectionName>
 
+### Running tests locally
+
+To run tests, you'll also need to: `pip install pytest requests`. These aren't used in the deployment, and are omitted from requirements.txt.
+
+After that, you'll want to run `pytest` to execute unit tests, and `pytest integrationtests/*` to execute integration tests. Integration tests require you start up the server and connect it to a database. 
+
 ## Contributing
 
 All of the issues in [the repository](https://github.com/icbat/stats) should be considered "help-wanted". Please submit a pull request, or open an issue.
