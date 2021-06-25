@@ -1,8 +1,6 @@
 # stats
 a simple stat server
 
-[![Build Status](https://travis-ci.org/icbat/stats.svg?branch=master)](https://travis-ci.org/icbat/stats)
-
 ## Setup
 
 ### Environment variables
