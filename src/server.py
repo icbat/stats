@@ -1,42 +1,17 @@
 import bottle
-from bottle import Bottle, request, response
+from redis import Redis
 import argparse
 from os import environ
 import time
 import json
+
 from api import stats
+from cors import EnableCors
 
+if __name__ != "__main__":
+    raise Exception("This file (server.py) was not meant to be imported.")
 
-print ("Initializing")
-print ("Reading ignored UUIDs from 'IGNORED_UUIDS' environment variable")
-try:
-    ignoredUUIDs = environ.get("IGNORED_UUIDS", "")
-    ignoredUUIDs = ignoredUUIDs.split(",")
-    print ("Ignoring " + str(ignoredUUIDs))
-except:
-    print ("Couldn't find ignored UUIDs in environment variable 'IGNORED_UUIDS'")
-    ignoredUUIDs = []
-logic = stats(ignoredUUIDs)
-
-class EnableCors(object):
-    name = 'enable_cors'
-    api = 2
-
-    def apply(self, fn, context):
-        def _enable_cors(*args, **kwargs):
-            # set CORS headers
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            response.headers['Access-Control-Allow-Methods'] = 'POST, GET'
-            response.headers['Access-Control-Allow-Headers'] = ''
-
-            if bottle.request.method != 'OPTIONS':
-                # actual request; reply with the actual response
-                return fn(*args, **kwargs)
-
-        return _enable_cors
-
-app = Bottle()
-
+app = bottle.Bottle()
 
 @app.get("/")
 def healthCheck():
@@ -75,7 +50,7 @@ def daily(collectionName):
     return output
 
 @app.post("/<collectionName>")
-def save_new(collectionName, bottleRequest = request, systemTime = time):
+def save_new(collectionName, bottleRequest = bottle.request, systemTime = time):
     print ("Trying to save to: " + collectionName)
     try:
         for key in bottleRequest.POST.keys():
@@ -94,15 +69,33 @@ def save_new(collectionName, bottleRequest = request, systemTime = time):
     print ("Save was successful!")
     return data_point
 
-if __name__ == "__main__":
-    print ("Enabling CORS for AJAX requests")
-    app.install(EnableCors())
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default="5000")
-    parser.add_argument("--host", default="127.0.0.1")
-    args = parser.parse_args()
+print ("Initializing")
+print ("Reading ignored UUIDs from 'IGNORED_UUIDS' environment variable")
+try:
+    ignoredUUIDs = environ.get("IGNORED_UUIDS", "")
+    ignoredUUIDs = ignoredUUIDs.split(",")
+    print ("Ignoring " + str(ignoredUUIDs))
+except:
+    print ("Couldn't find ignored UUIDs in environment variable 'IGNORED_UUIDS'")
+    ignoredUUIDs = []
+logic = stats(ignoredUUIDs)
 
-    print ("Starting the server\n")
-    app.run(port=args.port, host=args.host)
-    print ("Shutting down")
+print ("Reading REDIS_HOST and REDIS_PORT environment variables")
+redis_host = environ["REDIS_HOST"]
+redis_port = environ["REDIS_PORT"]
+redis_db = environ.get("REDIS_DB", "0")
+print (f"Connecting to Redis at {redis_host}:{redis_port}")
+redis = Redis(host=redis_host, port=redis_port, db=redis_db)
+
+print ("Enabling CORS for AJAX requests")
+app.install(EnableCors())
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--port", type=int, default="5000")
+parser.add_argument("--host", default="127.0.0.1")
+args = parser.parse_args()
+
+print ("Starting the server\n")
+app.run(port=args.port, host=args.host)
+print ("Shutting down")

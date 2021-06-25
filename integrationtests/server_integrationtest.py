@@ -35,3 +35,19 @@ def test_get_unfilled_collection_empty_array():
     assert r.status_code == 200
     assert r.json()['data'] == []
     assert r.json()['total'] == 0
+
+def test_get_filled_collection_empty_input():
+    metric_name = random_string()
+
+    input = {}
+
+    insert = requests.post(f"{local_server}/{metric_name}", json=input)
+
+    assert insert.status_code == 200
+    assert "message" not in insert.json().keys()
+
+    fetch = requests.get(f"{local_server}/{metric_name}")
+
+    assert fetch.status_code == 200
+    assert fetch.json()['data'] == []
+    assert fetch.json()['total'] == 1
