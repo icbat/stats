@@ -11,14 +11,12 @@ a simple stat server
 
 1. using python, `virtualenv venv`
 1. run script `venv/Scripts/activate` (or `source venv/Scripts/activate` is using something like bash)
-1. `pip install -r requirements.txt`
+1. `pip install -r requirements_localdev.txt`
 1. `python src/server.py --port <port> --host <host>`
 
 Once the server is running, you can post arbitrary JSON at `<yourServer>/<collectionName>` and it will be saved to your linked MongoDB server under collection <collectionName>
 
 ### Running tests locally
-
-To run tests, you'll also need to: `pip install pytest requests`. These aren't used in the deployment, and are omitted from requirements.txt.
 
 After that, you'll want to run `pytest` to execute unit tests, and `pytest integrationtests/*` to execute integration tests. Integration tests require you start up the server and connect it to a database. 
 
