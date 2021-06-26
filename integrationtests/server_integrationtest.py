@@ -29,6 +29,22 @@ def test_total_launches():
     fetch = fetch_req.json()
     assert int(fetch["total"]) == int(before["total"]) + 1
 
+def test_total_game_starts():
+    before_req = requests.get(f"{local_server}/gameStart")
+    before = before_req.json()
+
+    insert = requests.post(f"{local_server}/gameStart")
+
+    assert insert.status_code == 204
+    assert insert.text == ""
+
+    fetch_req = requests.get(f"{local_server}/gameStart")
+
+    assert fetch_req.status_code == 200
+
+    fetch = fetch_req.json()
+    assert int(fetch["total"]) == int(before["total"]) + 1
+
 def test_daily_highscore_legacy_format():
     """vertiblocks currently uses this endpoint to determine today's highscore. this app is hard to change at the moment, so keep this format sacred"""
     fetch = requests.get(f"{local_server}/score/today")
