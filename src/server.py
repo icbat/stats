@@ -22,7 +22,20 @@ try:
 except:
     print ("Couldn't find ignored UUIDs in environment variable 'IGNORED_UUIDS'")
     ignoredUUIDs = []
+
 logic = stats(ignoredUUIDs)
+
+print ("Reading REDIS_HOST and REDIS_PORT environment variables")
+redis_host = environ["REDIS_HOST"]
+redis_port = environ["REDIS_PORT"]
+redis_db = environ.get("REDIS_DB", "0")
+print (f"Connecting to Redis at {redis_host}:{redis_port}")
+redis = Redis(host=redis_host, port=redis_port, db=redis_db, decode_responses=True)
+print (f"Pinging Redis to verify connection at {redis_host}:{redis_port}")
+redis.ping()
+
+print ("Enabling CORS for AJAX requests")
+app.install(EnableCors())
 
 def get_redis_int(key):
     result = redis.get(key) or 0
@@ -74,7 +87,6 @@ def get_todays_scores():
 
     do not change output format, used in existing legacy apps (vertiblocks)
     """
-
     high_today = get_redis_int('top_score_today')
 
     return {"data": [ { "score": high_today } ]}
@@ -82,29 +94,14 @@ def get_todays_scores():
 ### Get for dashboards/analytics
 @app.get("/launch")
 def get_total_launches():
-    response = get_redis_int('total_app_launches')
-    return {"total": response}
+    return {"total": get_redis_int('total_app_launches')}
 
 @app.get("/gameStart")
 def get_total_game_starts():
-    response = get_redis_int('total_game_starts')
-    print(response)
-    print(type(response))
-    return {"total": response}
+    return {"total": get_redis_int('total_game_starts')}
 
 
-print ("Reading REDIS_HOST and REDIS_PORT environment variables")
-redis_host = environ["REDIS_HOST"]
-redis_port = environ["REDIS_PORT"]
-redis_db = environ.get("REDIS_DB", "0")
-print (f"Connecting to Redis at {redis_host}:{redis_port}")
-redis = Redis(host=redis_host, port=redis_port, db=redis_db, decode_responses=True)
-print (f"Pinging Redis to verify connection at {redis_host}:{redis_port}")
-redis.ping()
-
-print ("Enabling CORS for AJAX requests")
-app.install(EnableCors())
-
+### Actually start the app now that routes are setup
 parser = argparse.ArgumentParser()
 parser.add_argument("--port", type=int, default="5000")
 parser.add_argument("--host", default="127.0.0.1")
@@ -116,19 +113,8 @@ print ("Shutting down")
 
 ### TODO figure out all the endpoints that _CAN_ change (see the gh-pages branches of the 2 apps (vert and square))
 
-## Square
-## - ????
-
 ## Verti
-## - get launch
 ## - get launch/distinct
-## - get gameStart
 ## - get gameStart/daily_totals
 ## - get score (then does some math to come up with the max)
 ## - get score (then averages it out)
-
-
-### TODO re-architect what goes where based on all that knowledge ^^ and to work better w/ redis so we're only storing relevant data
-
-# I'm thinking we have a set of unique UUIDs (if we even need that?)
-# and things like launches/gamestarts are single metrics that are just counters
