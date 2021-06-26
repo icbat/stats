@@ -29,26 +29,36 @@ logic = stats(ignoredUUIDs)
 def healthCheck():
     return "I exist!"
 
+### Posts from games
 @app.post("/score")
 def save_score():
     # TODO save the scores :)
-    return bottle.HTTPResponse(status=204, body="")
+    return bottle.HTTPResponse(status=204)
 
 @app.post("/launch")
 def save_launch():
     redis.incr('total_app_launches')
-    return bottle.HTTPResponse(status=204, body="")
+    return bottle.HTTPResponse(status=204)
 
 @app.post("/gameStart")
 def save_game_start():
     redis.incr('total_game_starts')
-    return bottle.HTTPResponse(status=204, body="")
+    return bottle.HTTPResponse(status=204)
 
+### Gets from games
+@app.get("/score/today")
+def get_todays_scores():
+    """
+    used to figure out today's high score
+
+    do not change output format, used in existing legacy apps
+    """
+    return {}
+
+### Get for dashboards/analytics
 @app.get("/launch")
 def get_total_launches():
     response = redis.get('total_app_launches') or 0
-    print(response)
-    print(type(response))
     return {"total": response}
 
 @app.get("/gameStart")
@@ -58,14 +68,6 @@ def get_total_game_starts():
     print(type(response))
     return {"total": response}
 
-@app.get("/score/today")
-def get_todays_scores():
-    """
-    used to figure out today's high score
-
-    do not change output format, used in existing legacy apps
-    """
-    return {}
 
 print ("Reading REDIS_HOST and REDIS_PORT environment variables")
 redis_host = environ["REDIS_HOST"]
