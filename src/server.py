@@ -54,6 +54,9 @@ def save_score():
     if score > high_today:
         redis.setex('top_score_today', seconds_per_day, score)
 
+    redis.incr('reported_scores')
+    redis.incr('accumulated_score', score)
+
     return bottle.HTTPResponse(status=204)
 
 @app.post("/launch")
@@ -99,6 +102,15 @@ def get_total_game_starts():
 def get_high_score_alltime():
     return {"total": get_redis_int('top_score_alltime')}
 
+@app.get("/score/average")
+def get_average_score():
+    count = get_redis_int('reported_scores')
+    total = get_redis_int('accumulated_score')
+
+    if count == 0:
+        return {"total": 0}
+
+    return {"total": total/count}
 
 ### Actually start the app now that routes are setup
 parser = argparse.ArgumentParser()
@@ -114,6 +126,5 @@ print ("Shutting down")
 
 ## Verti
 ## - get gameStart/daily_totals - this is an array of each day's daily total of game starts. maybe this is keys with the date in them that expires? how do we get those?
-## - get score (then averages it out)
 
 ## TODO DAU/MAU
