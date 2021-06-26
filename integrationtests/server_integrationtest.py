@@ -29,6 +29,27 @@ def test_total_launches():
     fetch = fetch_req.json()
     assert int(fetch["total"]) == int(before["total"]) + 1
 
+def test_distinct_launches():
+    """each device should generate and save a UUID and send it with every request so we can tell how many unique devices are using the apps"""
+    before_req = requests.get(f"{local_server}/launch/distinct")
+    before = before_req.json()
+
+    requests.post(f"{local_server}/launch", json={"uuid": "jackhayful"})
+    requests.post(f"{local_server}/launch", json={"uuid": "jackhayful"})
+    requests.post(f"{local_server}/launch", json={"uuid": "jackhayful"})
+    requests.post(f"{local_server}/launch", json={"uuid": "hoopesorshutt"})
+    new_unique_name = random_string()
+    requests.post(f"{local_server}/launch", json={"uuid": new_unique_name})
+    requests.post(f"{local_server}/launch", json={"uuid": new_unique_name})
+
+    fetch_req = requests.get(f"{local_server}/launch/distinct")
+
+    assert fetch_req.status_code == 200
+
+    fetch = fetch_req.json()
+    assert int(fetch["total"]) > int(before["total"])
+    assert int(fetch["total"]) <= int(before["total"]) + 3
+
 def test_total_game_starts():
     before_req = requests.get(f"{local_server}/gameStart")
     before = before_req.json()
@@ -66,6 +87,7 @@ def build_score_payload(score):
 
     return {
         "score": score,
+        "uuid": random_string(),
         "runDuration": random.randint(1234, 999999),
         "diedTo": formatedObstacle,
     }

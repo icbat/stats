@@ -58,6 +58,10 @@ def save_score():
 
 @app.post("/launch")
 def save_launch():
+    input = bottle.request.json
+    if input is not None and "uuid" in input.keys():
+        redis.sadd('launched_by_uuid', input["uuid"])
+
     redis.incr('total_app_launches')
     return bottle.HTTPResponse(status=204)
 
@@ -83,6 +87,10 @@ def get_todays_scores():
 def get_total_launches():
     return {"total": get_redis_int('total_app_launches')}
 
+@app.get("/launch/distinct")
+def get_total_launches():
+    return {"total": redis.scard('launched_by_uuid')}
+
 @app.get("/gameStart")
 def get_total_game_starts():
     return {"total": get_redis_int('total_game_starts')}
@@ -101,7 +109,8 @@ print ("Shutting down")
 ### TODO figure out all the endpoints that _CAN_ change (see the gh-pages branches of the 2 apps (vert and square))
 
 ## Verti
-## - get launch/distinct
 ## - get gameStart/daily_totals
 ## - get score (then does some math to come up with the max)
 ## - get score (then averages it out)
+
+## TODO DAU/MAU
