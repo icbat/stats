@@ -1,24 +1,26 @@
 # stats
-a simple stat server
+a simple stat server for collecting scores and usage for various app
 
 ## Setup
 
 ### Environment variables
 
-* `IGNORED_UUIDS` is an optional comma-separated list of uuid's to remove from all results. This is handy for excluding development results from reporting while still being able to see them in the database.
+* `REDIS_HOST` the URL to the Redis instance that's backthing this
+* `REDIS_PORT` the port for the Redis instance that's backing this
+* `REDIS_DB` the internal DB in the Redis instance to use. Optional, defaults to `0`
 
 ### How to turn it on locally
 
-1. using python, `virtualenv venv`
-1. run script `venv/Scripts/activate` (or `source venv/Scripts/activate` is using something like bash)
-1. `pip install -r requirements_localdev.txt`
-1. `python src/server.py --port <port> --host <host>`
+Recommend running Redis locally w/ docker with a command like `docker run --name local-redis -p 6379:6379 -d redis`
 
-Once the server is running, you can post arbitrary JSON at `<yourServer>/<collectionName>` and it will be saved to your linked MongoDB server under collection <collectionName>
+1. using python, `virtualenv venv`
+1. `source venv/Scripts/activate` or however you need to activate the virtualenv (varies by OS)
+1. `pip install -r requirements_localdev.txt`
+1. `REDIS_HOST=localhost REDIS_PORT=<your local redis port> python src/server.py --port <port> --host <host>`
 
 ### Running tests locally
 
-After that, you'll want to run `pytest` to execute unit tests, and `pytest integrationtests/*` to execute integration tests. Integration tests require you start up the server and connect it to a database. 
+Run `pytest integrationtests/*` to execute integration tests. Integration tests require you start up the server and connect it to a database.
 
 ## Contributing
 
