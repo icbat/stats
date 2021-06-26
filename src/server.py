@@ -2,6 +2,7 @@ import bottle
 from redis import Redis
 import argparse
 from os import environ
+from datetime import date, timedelta
 
 from cors import EnableCors
 
@@ -70,6 +71,12 @@ def save_launch():
 
 @app.post("/gameStart")
 def save_game_start():
+    input = bottle.request.json
+    if input is not None and "uuid" in input.keys():
+        today = date.today()
+        redis.sadd(f"dau_{today}", input["uuid"])
+        redis.expireat(f"dau_{today}", date.today() + timedelta(-90))
+
     redis.incr('total_game_starts')
     return bottle.HTTPResponse(status=204)
 
@@ -112,6 +119,21 @@ def get_average_score():
 
     return {"total": total/count}
 
+@app.get("/dau")
+def get_daily_active_users():
+    today = date.today()
+    return {"total": redis.scard(f'dau_{today}')}
+
+@app.get("/mau")
+def get_monthly_active_users():
+    today = date.today()
+    mau = 0
+    for days_past in range(30):
+        delta = today + timedelta(-days_past)
+        mau += redis.scard(f'dau_{delta}')
+
+    return {"total": mau}
+
 ### Actually start the app now that routes are setup
 parser = argparse.ArgumentParser()
 parser.add_argument("--port", type=int, default="5000")
@@ -121,10 +143,3 @@ args = parser.parse_args()
 print ("Starting the server\n")
 app.run(port=args.port, host=args.host)
 print ("Shutting down")
-
-### TODO figure out all the endpoints that _CAN_ change (see the gh-pages branches of the 2 apps (vert and square))
-
-## Verti
-## - get gameStart/daily_totals - this is an array of each day's daily total of game starts. maybe this is keys with the date in them that expires? how do we get those?
-
-## TODO DAU/MAU
