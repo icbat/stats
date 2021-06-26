@@ -7,47 +7,37 @@ local_server = 'http://localhost:5000'
 def random_string():
     return ''.join(random.choice(string.ascii_letters) for _ in range(10))
 
-def test_post_rejects_no_json():
-    r = requests.post(f"{local_server}/{random_string()}")
+def test_no_longer_supports_random_collection_names():
+    """This app used to support arbitrary naming. However, with a move to redis, we now only support a handful of routes by literal name"""
+    response = requests.get(f"{local_server}/{random_string()}")
 
-    # why did I make it return 200 here? I hate it.
-    assert r.status_code == 200
-    # weird that it doesn't hit the right error message, I wonder why that is
-    assert r.json()['message'] == 'malformed JSON was provided'
+    assert response.status_code == 404
 
-def test_post_rejects_bad_json():
-    r = requests.post(f"{local_server}/{random_string()}", data="I'm Jason, not JSON")
+def test_total_launches():
+    before = requests.get(f"{local_server}/launch")
 
-    # why did I make it return 200 here? I hate it.
-    assert r.status_code == 200
-    assert r.json()['message'] == 'malformed JSON was provided'
+    insert = requests.post(f"{local_server}/launch")
 
-def test_post_accepts_empty_bodies():
-    r = requests.post(f"{local_server}/{random_string()}", json={})
-    
-    assert r.status_code == 200
-    assert "timestamp" in r.json().keys()
-    assert len(r.json().keys()) == 1
+    assert insert.status_code == 204
+    assert insert.text == ""
 
-def test_get_unfilled_collection_empty_array():
-    r = requests.get(f"{local_server}/{random_string()}")
-
-    assert r.status_code == 200
-    assert r.json()['data'] == []
-    assert r.json()['total'] == 0
-
-def test_get_filled_collection_empty_input():
-    metric_name = random_string()
-
-    input = {}
-
-    insert = requests.post(f"{local_server}/{metric_name}", json=input)
-
-    assert insert.status_code == 200
-    assert "message" not in insert.json().keys()
-
-    fetch = requests.get(f"{local_server}/{metric_name}")
+    fetch = requests.get(f"{local_server}/launch")
 
     assert fetch.status_code == 200
-    assert fetch.json()['data'] == []
-    assert fetch.json()['total'] == 1
+    assert int(fetch.json()["total"]) == int(before.json()["total"]) + 1
+
+# def test_total_game_starts():
+#     before = requests.get(f"{local_server}/gameStart")
+
+#     assert before.json()["total"] == 0
+
+    # insert = requests.post(f"{local_server}/launch")
+
+    # assert insert.status_code == 204
+    # assert insert.text == ""
+
+    # fetch = requests.get(f"{local_server}/launch")
+
+    # assert fetch.status_code == 200
+    # assert int(fetch.text) == int(before) + 1
+

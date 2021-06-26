@@ -13,63 +13,6 @@ if __name__ != "__main__":
 
 app = bottle.Bottle()
 
-@app.get("/")
-def healthCheck():
-    return "I exist!"
-
-@app.get("/<collectionName>")
-def all(collectionName):
-    print ("Fetching all data from collection " + collectionName)
-    # rawData = list(mongodb[collectionName].find())
-    rawData = list([])
-    output = logic.cleanse(rawData)
-    return logic.present(output)
-
-@app.get("/<collectionName>/distinct")
-def distinct(collectionName):
-    print ("Fetching distinct uuids from collection " + collectionName)
-    # rawData = list(mongodb[collectionName].distinct("uuid"))
-    rawData = list([])
-    output = [uuid for uuid in rawData if uuid not in ignoredUUIDs]
-    return logic.present(output)
-
-@app.get("/<collectionName>/daily_totals")
-def daily(collectionName):
-    # rawData = list(mongodb[collectionName].find())
-    rawData = list([])
-    rawData = logic.cleanse(rawData)
-    output = logic.daily_totals(rawData)
-    return output
-
-@app.get("/<collectionName>/today")
-def daily(collectionName):
-    # rawData = list(mongodb[collectionName].find())
-    rawData = list([])
-    rawData = logic.cleanse(rawData)
-    output = logic.from_today(rawData)
-    return output
-
-@app.post("/<collectionName>")
-def save_new(collectionName, bottleRequest = bottle.request, systemTime = time):
-    print ("Trying to save to: " + collectionName)
-    try:
-        for key in bottleRequest.POST.keys():
-            data_point = key
-        if data_point is None:
-            print ("No JSON posted, will not try to save")
-            return {"message": "this endpoint expects JSON"}
-        data_point = json.loads(data_point)
-        print ("Saving new from " + str(data_point) + " to collection '" + collectionName + "'")
-    except:
-        print ("Could not parse JSON provided, will not try to save")
-        return {"message": "malformed JSON was provided"}
-
-    data_point["timestamp"] = systemTime.time()
-    # mongodb[collectionName].insert_one(data_point)
-    print ("Save was successful!")
-    return data_point
-
-
 print ("Initializing")
 print ("Reading ignored UUIDs from 'IGNORED_UUIDS' environment variable")
 try:
@@ -81,12 +24,57 @@ except:
     ignoredUUIDs = []
 logic = stats(ignoredUUIDs)
 
+### Routes
+@app.get("/")
+def healthCheck():
+    return "I exist!"
+
+@app.post("/score")
+def save_score():
+    # TODO save the scores :)
+    return bottle.HTTPResponse(status=204, body="")
+
+@app.post("/launch")
+def save_launch():
+    redis.incr('total_app_launches')
+    return bottle.HTTPResponse(status=204, body="")
+
+@app.post("/gameStart")
+def save_game_start():
+    redis.incr('total_game_starts')
+    return bottle.HTTPResponse(status=204, body="")
+
+@app.get("/launch")
+def get_total_launches():
+    response = redis.get('total_app_launches') or 0
+    print(response)
+    print(type(response))
+    return {"total": response}
+
+@app.get("/gameStart")
+def get_total_game_starts():
+    response = redis.get('total_game_starts') or 0
+    print(response)
+    print(type(response))
+    return {"total": response}
+
+@app.get("/score/today")
+def get_todays_scores():
+    """
+    used to figure out today's high score
+
+    do not change output format, used in existing legacy apps
+    """
+    return {}
+
 print ("Reading REDIS_HOST and REDIS_PORT environment variables")
 redis_host = environ["REDIS_HOST"]
 redis_port = environ["REDIS_PORT"]
 redis_db = environ.get("REDIS_DB", "0")
 print (f"Connecting to Redis at {redis_host}:{redis_port}")
-redis = Redis(host=redis_host, port=redis_port, db=redis_db)
+redis = Redis(host=redis_host, port=redis_port, db=redis_db, decode_responses=True)
+print (f"Pinging Redis to verify connection at {redis_host}:{redis_port}")
+redis.ping()
 
 print ("Enabling CORS for AJAX requests")
 app.install(EnableCors())
@@ -99,3 +87,38 @@ args = parser.parse_args()
 print ("Starting the server\n")
 app.run(port=args.port, host=args.host)
 print ("Shutting down")
+
+
+### TODO figure out all the endpoints that cannot change
+
+# everything here has a UUID to track who did/so we can distinct stuff out
+
+## Square
+## - post -> launch
+## - post -> gameStart
+## - post -> score (also includes the score)
+
+## Verti
+## - get score/today (to calculate high score, it also does a MAX on the whole collection)
+## - post score (also includes score, runDuration, and diedTo)
+## - post launch
+## - post gameStart
+
+### TODO figure out all the endpoints that _CAN_ change (see the gh-pages branches of the 2 apps (vert and square))
+
+## Square
+## - ????
+
+## Verti
+## - get launch
+## - get launch/distinct
+## - get gameStart
+## - get gameStart/daily_totals
+## - get score (then does some math to come up with the max)
+## - get score (then averages it out)
+
+
+### TODO re-architect what goes where based on all that knowledge ^^ and to work better w/ redis so we're only storing relevant data
+
+# I'm thinking we have a set of unique UUIDs (if we even need that?)
+# and things like launches/gamestarts are single metrics that are just counters
