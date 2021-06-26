@@ -50,6 +50,24 @@ def test_distinct_launches():
     assert int(fetch["total"]) > int(before["total"])
     assert int(fetch["total"]) <= int(before["total"]) + 3
 
+def test_submitting_launches_without_anything_graceful():
+    """we should still collect launches even if you don't send JSON to this endpoint"""
+    insert = requests.post(f"{local_server}/launch")
+
+    assert insert.status_code == 204
+
+def test_submitting_launches_without_json_graceful():
+    """we should still collect launches even if you don't send a UUID in your JSON to this endpoint"""
+    insert = requests.post(f"{local_server}/launch", data="I'm Jason, not JSON")
+
+    assert insert.status_code == 204
+
+def test_submitting_launches_without_uuid_graceful():
+    """we should still collect launches even if you don't send a UUID in your JSON to this endpoint"""
+    insert = requests.post(f"{local_server}/launch", json={"something else entirely": "definitely not what we expect"})
+
+    assert insert.status_code == 204
+
 def test_total_game_starts():
     before_req = requests.get(f"{local_server}/gameStart")
     before = before_req.json()
@@ -118,3 +136,13 @@ def test_submitting_scores_no_score_attribute_fails():
 
     assert failure.status_code == 400
     assert failure.text == "Submitting a new score must include a score attribute"
+
+def test_getting_alltime_high_format():
+    requests.post(f"{local_server}/score", json = build_score_payload(200))
+
+    fetch = requests.get(f"{local_server}/score/alltime")
+
+    assert fetch.status_code == 200
+
+    json = fetch.json()
+    assert json["total"] >= 200

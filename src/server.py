@@ -95,6 +95,10 @@ def get_total_launches():
 def get_total_game_starts():
     return {"total": get_redis_int('total_game_starts')}
 
+@app.get("/score/alltime")
+def get_high_score_alltime():
+    return {"total": get_redis_int('top_score_alltime')}
+
 
 ### Actually start the app now that routes are setup
 parser = argparse.ArgumentParser()
@@ -109,8 +113,7 @@ print ("Shutting down")
 ### TODO figure out all the endpoints that _CAN_ change (see the gh-pages branches of the 2 apps (vert and square))
 
 ## Verti
-## - get gameStart/daily_totals
-## - get score (then does some math to come up with the max)
+## - get gameStart/daily_totals - this is an array of each day's daily total of game starts. maybe this is keys with the date in them that expires? how do we get those?
 ## - get score (then averages it out)
 
 ## TODO DAU/MAU
