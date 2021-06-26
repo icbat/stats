@@ -26,18 +26,54 @@ def test_total_launches():
     assert fetch.status_code == 200
     assert int(fetch.json()["total"]) == int(before.json()["total"]) + 1
 
-# def test_total_game_starts():
-#     before = requests.get(f"{local_server}/gameStart")
+def test_daily_highscore_legacy_format():
+    """vertiblocks currently uses this endpoint to determine today's highscore. this app is hard to change at the moment, so keep this format sacred"""
+    fetch = requests.get(f"{local_server}/score/today")
 
-#     assert before.json()["total"] == 0
+    json = fetch.json()
 
-    # insert = requests.post(f"{local_server}/launch")
+    assert "data" in json.keys()
+    for score in json["data"]:
+        assert "score" in score.keys()
 
-    # assert insert.status_code == 204
-    # assert insert.text == ""
+def build_score_payload(score):
+    """this is what vertiblocks sends as its score payloads. currently the most complicated one"""
+    formatedObstacle = {
+        "name": random_string(),
+        "x": random.randint(0, 100),
+        "speed": random.randint(10, 50),
+        "level": random.randint(1, 500),
+    }
 
-    # fetch = requests.get(f"{local_server}/launch")
+    return {
+        "score": score,
+        "runDuration": random.randint(1234, 999999),
+        "diedTo": formatedObstacle,
+    }
 
-    # assert fetch.status_code == 200
-    # assert int(fetch.text) == int(before) + 1
+def test_daily_highscore_fast_with_redis():
+    """goal is to only send one back so the app can calculate it fast and reduce network"""
+    highscore = 200
+    requests.post(f"{local_server}/score", json = build_score_payload(highscore))
+    requests.post(f"{local_server}/score", json = build_score_payload(highscore - 50))
+    requests.post(f"{local_server}/score", json = build_score_payload(highscore - 70))
+    requests.post(f"{local_server}/score", json = build_score_payload(0 - highscore))
 
+    fetch = requests.get(f"{local_server}/score/today")
+
+    json = fetch.json()
+
+    assert len(json["data"]) == 1
+    assert json["data"][0]["score"] == highscore
+
+def test_submitting_scores_not_json_fails():
+    failure = requests.post(f"{local_server}/score", data = "I'm Jason, not JSON")
+
+    assert failure.status_code == 400
+    assert failure.text == "This endpoint requires valid JSON"
+
+def test_submitting_scores_no_score_attribute_fails():
+    failure = requests.post(f"{local_server}/score", json = {"name": "not really a score I guess"})
+
+    assert failure.status_code == 400
+    assert failure.text == "Submitting a new score must include a score attribute"

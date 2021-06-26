@@ -2,14 +2,14 @@ import bottle
 from redis import Redis
 import argparse
 from os import environ
-import time
-import json
 
 from api import stats
 from cors import EnableCors
 
 if __name__ != "__main__":
     raise Exception("This file (server.py) was not meant to be imported.")
+
+seconds_per_day = 60*60*24
 
 app = bottle.Bottle()
 
@@ -24,6 +24,10 @@ except:
     ignoredUUIDs = []
 logic = stats(ignoredUUIDs)
 
+def get_redis_int(key):
+    result = redis.get(key) or 0
+    return int(result)
+
 ### Routes
 @app.get("/")
 def healthCheck():
@@ -32,7 +36,24 @@ def healthCheck():
 ### Posts from games
 @app.post("/score")
 def save_score():
-    # TODO save the scores :)
+    if bottle.request.json is None:
+        return bottle.HTTPResponse(status=400, body="This endpoint requires valid JSON")
+
+    input = bottle.request.json
+
+    if "score" not in input.keys():
+        return bottle.HTTPResponse(status=400, body="Submitting a new score must include a score attribute")
+
+    score = int(input["score"])
+    high_alltime = get_redis_int('top_score_alltime')
+    high_today = get_redis_int('top_score_today')
+
+    if score > high_alltime:
+        redis.set('top_score_alltime', score)
+
+    if score > high_today:
+        redis.setex('top_score_today', seconds_per_day, score)
+
     return bottle.HTTPResponse(status=204)
 
 @app.post("/launch")
@@ -51,19 +72,22 @@ def get_todays_scores():
     """
     used to figure out today's high score
 
-    do not change output format, used in existing legacy apps
+    do not change output format, used in existing legacy apps (vertiblocks)
     """
-    return {}
+
+    high_today = get_redis_int('top_score_today')
+
+    return {"data": [ { "score": high_today } ]}
 
 ### Get for dashboards/analytics
 @app.get("/launch")
 def get_total_launches():
-    response = redis.get('total_app_launches') or 0
+    response = get_redis_int('total_app_launches')
     return {"total": response}
 
 @app.get("/gameStart")
 def get_total_game_starts():
-    response = redis.get('total_game_starts') or 0
+    response = get_redis_int('total_game_starts')
     print(response)
     print(type(response))
     return {"total": response}
@@ -89,22 +113,6 @@ args = parser.parse_args()
 print ("Starting the server\n")
 app.run(port=args.port, host=args.host)
 print ("Shutting down")
-
-
-### TODO figure out all the endpoints that cannot change
-
-# everything here has a UUID to track who did/so we can distinct stuff out
-
-## Square
-## - post -> launch
-## - post -> gameStart
-## - post -> score (also includes the score)
-
-## Verti
-## - get score/today (to calculate high score, it also does a MAX on the whole collection)
-## - post score (also includes score, runDuration, and diedTo)
-## - post launch
-## - post gameStart
 
 ### TODO figure out all the endpoints that _CAN_ change (see the gh-pages branches of the 2 apps (vert and square))
 
