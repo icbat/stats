@@ -1,23 +1,24 @@
 # stats
-a simple stat server
-
-[![Build Status](https://travis-ci.org/icbat/stats.svg?branch=master)](https://travis-ci.org/icbat/stats)
+a simple stat server for collecting scores and usage for various app
 
 ## Setup
 
 ### Environment variables
 
-* `MONGODB_URI` is a required variable that says how to connect to the linked MongoDB instance. It looks like `mongodb://<mongo-username>:<mongo-password>@host:port` When using something like mLab MongoDB on Heroku, they should provide most of this, but you'll need to add your `mongo-username` and `mongo-password`
-* `IGNORED_UUIDS` is an optional comma-separated list of uuid's to remove from all results. This is handy for excluding development results from reporting while still being able to see them in the database.
+* `REDISTOGO_URL` The fully qualified URL to the connected Redis instance, including port and, if necessary, basic auth
 
 ### How to turn it on locally
 
-1. using python, `virtualenv venv`
-1. run script `venv/Scripts/activate` (or `source venv/Scripts/activate` is using something like bash)
-1. `pip install -r requirements.txt`
-1. `MONGODB_URI=<your local mongodb> python src/server.py --port <port> --host <host>`
+Recommend running Redis locally w/ docker with a command like `docker run --name local-redis -p 6379:6379 -d redis`
 
-Once the server is running, you can post arbitrary JSON at `<yourServer>/<collectionName>` and it will be saved to your linked MongoDB server under collection <collectionName>
+1. using python, `virtualenv venv`
+1. `source venv/Scripts/activate` or however you need to activate the virtualenv (varies by OS)
+1. `pip install -r requirements_localdev.txt`
+1. `REDISTOGO_URL=redis://localhost:6379 python src/server.py`
+
+### Running tests locally
+
+Run `pytest integrationtests/*` to execute integration tests. Integration tests require you start up the server and connect it to a database.
 
 ## Contributing
 
