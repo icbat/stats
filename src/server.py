@@ -3,6 +3,7 @@ from redis import Redis
 import argparse
 from os import environ
 from datetime import date, timedelta
+from urllib.parse import urlparse
 
 from cors import EnableCors
 
@@ -14,12 +15,18 @@ seconds_per_day = 60 * 60 * 24
 app = bottle.Bottle()
 
 print("Reading REDIS_HOST and REDIS_PORT environment variables")
-redis_host = environ["REDIS_HOST"]
-redis_port = environ["REDIS_PORT"]
-redis_db = environ.get("REDIS_DB", "0")
-print(f"Connecting to Redis at {redis_host}:{redis_port}")
-redis = Redis(host=redis_host, port=redis_port, db=redis_db, decode_responses=True)
-print(f"Pinging Redis to verify connection at {redis_host}:{redis_port}")
+redis_to_go_url = environ["REDISTOGO_URL"]
+parsed = urlparse(redis_to_go_url)
+
+print(f"Connecting to Redis at {parsed.hostname}:{parsed.port}")
+redis = Redis(
+    host=parsed.hostname,
+    port=parsed.port,
+    username=parsed.username,
+    password=parsed.password,
+    decode_responses=True,
+)
+print(f"Pinging Redis to verify connection at {parsed.hostname}:{parsed.port}")
 redis.ping()
 
 print("Enabling CORS for AJAX requests")

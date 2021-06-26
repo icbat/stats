@@ -5,9 +5,7 @@ a simple stat server for collecting scores and usage for various app
 
 ### Environment variables
 
-* `REDIS_HOST` the URL to the Redis instance that's backthing this
-* `REDIS_PORT` the port for the Redis instance that's backing this
-* `REDIS_DB` the internal DB in the Redis instance to use. Optional, defaults to `0`
+* `REDISTOGO_URL` The fully qualified URL to the connected Redis instance, including port and, if necessary, basic auth
 
 ### How to turn it on locally
 
@@ -16,7 +14,7 @@ Recommend running Redis locally w/ docker with a command like `docker run --name
 1. using python, `virtualenv venv`
 1. `source venv/Scripts/activate` or however you need to activate the virtualenv (varies by OS)
 1. `pip install -r requirements_localdev.txt`
-1. `REDIS_HOST=localhost REDIS_PORT=<your local redis port> python src/server.py --port <port> --host <host>`
+1. `REDISTOGO_URL=redis://localhost:6379 python src/server.py`
 
 ### Running tests locally
 
