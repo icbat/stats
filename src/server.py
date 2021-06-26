@@ -3,7 +3,6 @@ from redis import Redis
 import argparse
 from os import environ
 
-from api import stats
 from cors import EnableCors
 
 if __name__ != "__main__":
@@ -12,18 +11,6 @@ if __name__ != "__main__":
 seconds_per_day = 60*60*24
 
 app = bottle.Bottle()
-
-print ("Initializing")
-print ("Reading ignored UUIDs from 'IGNORED_UUIDS' environment variable")
-try:
-    ignoredUUIDs = environ.get("IGNORED_UUIDS", "")
-    ignoredUUIDs = ignoredUUIDs.split(",")
-    print ("Ignoring " + str(ignoredUUIDs))
-except:
-    print ("Couldn't find ignored UUIDs in environment variable 'IGNORED_UUIDS'")
-    ignoredUUIDs = []
-
-logic = stats(ignoredUUIDs)
 
 print ("Reading REDIS_HOST and REDIS_PORT environment variables")
 redis_host = environ["REDIS_HOST"]
