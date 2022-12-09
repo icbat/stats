@@ -2,7 +2,7 @@ atomicwrites==1.4.0
 attrs==21.2.0
 bottle==0.12.19
 bottle-redis==0.2.3
-certifi==2021.5.30
+certifi==2022.12.7
 chardet==4.0.0
 colorama==0.4.4
 idna==2.10
